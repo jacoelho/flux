@@ -4,6 +4,8 @@ package main
 
 import (
 	"flux/generator"
+	"flux/payload"
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -26,12 +28,21 @@ func main() {
 `
 	tmpl := template.Must(template.New("titleTest").Funcs(funcMap).Parse(templateText))
 
-	for {
-		// Run the template to verify the output.
-		err := tmpl.Execute(os.Stdout, nil)
-		if err != nil {
-			log.Fatalf("execution: %s", err)
-		}
-
+	// Run the template to verify the output.
+	err := tmpl.Execute(os.Stdout, nil)
+	if err != nil {
+		log.Fatalf("execution: %s", err)
 	}
+
+	file, err := os.Open("test.json")
+	if err != nil {
+		log.Fatalf("open %s", err)
+	}
+	defer file.Close()
+
+	p, err := payload.ReadFrom(file)
+	if err != nil {
+		log.Fatalf("open %s", err)
+	}
+	fmt.Println(string(p.Content()))
 }
