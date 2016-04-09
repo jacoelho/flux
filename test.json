@@ -1,3 +1,13 @@
 {
-    "test": "{{ randInt 5 10 }}"
+    "data": [
+        {{- range $i, $_ := slice 30 }}
+        {{- if $i}},{{end}}
+        {
+            "id": "{{ rand 10 1000000 }}",
+            "Name": "{{ firstName }} {{ lastName }}",
+            "gender": "{{ choice "male" "female" }}"
+            "gender": "{{ choice 1 2 3  }}"
+        }
+        {{- end}}
+    ]
 }

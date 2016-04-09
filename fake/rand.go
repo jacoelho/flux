@@ -1,4 +1,4 @@
-package generator
+package fake
 
 func RandInt(min, max int, c *Config) int {
 	return c.getRand().Intn(max-min) + min

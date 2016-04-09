@@ -1,4 +1,4 @@
-package generator
+package fake
 
 func FirstName(c *Config) string {
 	first := [...]string{

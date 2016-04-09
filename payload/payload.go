@@ -12,10 +12,15 @@ type payload struct {
 
 type Payload interface {
 	Content() []byte
+	Serialize(io.Writer) error
 }
 
 func (p *payload) Content() []byte {
 	return p.content
+}
+
+func (p *payload) Serialize(w io.Writer) error {
+	return nil
 }
 
 func extractContent(r io.Reader) (content []byte, err error) {

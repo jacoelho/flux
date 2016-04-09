@@ -3,36 +3,21 @@
 package main
 
 import (
-	"flux/generator"
-	"flux/payload"
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
 	"text/template"
 	"time"
+
+	"github.com/jacoelho/flux/fake"
+	"github.com/jacoelho/flux/payload"
 )
 
-var config = &generator.Config{
+var config = &fake.Config{
 	Rand: rand.New(rand.NewSource((time.Now().Unix()))),
 }
 
 func main() {
-
-	funcMap := template.FuncMap{
-		"rand":      func(a, b int) int { return generator.RandInt(a, b, config) },
-		"randFloat": func(a, b float64) float64 { return generator.RandFloat(a, b, config) },
-	}
-	templateText := `
-    Output 1: "{{ randFloat 10.01 15.02 | printf "%.2f" }}"
-`
-	tmpl := template.Must(template.New("titleTest").Funcs(funcMap).Parse(templateText))
-
-	// Run the template to verify the output.
-	err := tmpl.Execute(os.Stdout, nil)
-	if err != nil {
-		log.Fatalf("execution: %s", err)
-	}
 
 	file, err := os.Open("test.json")
 	if err != nil {
@@ -44,5 +29,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("open %s", err)
 	}
-	fmt.Println(string(p.Content()))
+
+	tmpl, err := template.New("").Funcs(fake.FuncMap(config)).Parse(string(p.Content()))
+	if err != nil {
+		log.Fatalf("template %s", err)
+	}
+
+	// Run the template to verify the output.
+	err = tmpl.Execute(os.Stdout, nil)
+	if err != nil {
+		log.Fatalf("execution: %s", err)
+	}
 }
