@@ -1,25 +1,35 @@
-//import "gopkg.in/Shopify/sarama.v1"
-
 package main
 
 import (
+	"bytes"
+	"flag"
 	"log"
 	"math/rand"
 	"os"
+	"strings"
 	"text/template"
 	"time"
 
+	"github.com/jacoelho/flux/backends"
 	"github.com/jacoelho/flux/fake"
 	"github.com/jacoelho/flux/payload"
 )
 
-var config = &fake.Config{
-	Rand: rand.New(rand.NewSource((time.Now().Unix()))),
-}
+var (
+	tmpPayload   bytes.Buffer
+	backendNodes = flag.String("nodes", "", "backend nodes as a comma separated list")
+	backendType  = flag.String("type", "kafka", "backend type: kafka|stdout")
+	fileTemplate = flag.String("template", "", "template file")
+
+	config = &fake.Config{
+		Rand: rand.New(rand.NewSource((time.Now().Unix()))),
+	}
+)
 
 func main() {
+	flag.Parse()
 
-	file, err := os.Open("test.json")
+	file, err := os.Open(*fileTemplate)
 	if err != nil {
 		log.Fatalf("open %s", err)
 	}
@@ -35,9 +45,22 @@ func main() {
 		log.Fatalf("template %s", err)
 	}
 
-	// Run the template to verify the output.
-	err = tmpl.Execute(os.Stdout, nil)
+	cfg := &backends.Config{
+		Type:  *backendType,
+		Nodes: strings.Split(*backendNodes, ","),
+	}
+
+	client, err := backends.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("execution: %s", err)
+	}
+
+	for {
+		tmpl.Execute(&tmpPayload, nil)
+		client.Serialize(tmpPayload.String())
+		tmpPayload.Reset()
+	}
+	client.Close()
+	for {
 	}
 }

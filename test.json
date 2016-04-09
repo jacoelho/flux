@@ -1,12 +1,12 @@
 {
     "data": [
-        {{- range $i, $_ := slice 30 }}
+        {{- range $i, $_ := slice 100 }}
         {{- if $i}},{{end}}
         {
             "id": "{{ rand 10 1000000 }}",
-            "Name": "{{ firstName }} {{ lastName }}",
-            "gender": "{{ choice "male" "female" }}"
-            "gender": "{{ choice 1 2 3  }}"
+            "name": "{{ firstName }} {{ lastName }}",
+            "gender": "{{ choice "male" "female" }}",
+            "type": "{{ choice 1 2 3 }}"
         }
         {{- end}}
     ]
