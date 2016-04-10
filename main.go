@@ -60,7 +60,7 @@ func main() {
 		client.Serialize(tmpPayload.String())
 		tmpPayload.Reset()
 	}
-	client.Close()
+
 	for {
 	}
 }
