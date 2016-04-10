@@ -1,6 +1,6 @@
 {
     "data": [
-        {{- range $i, $_ := sequence 100 }}
+        {{- range $i, $_ := sequence 2 }}
         {{- if $i}},{{end}}
         {
             "id": "{{ rand 10 1000000 }}",

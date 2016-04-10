@@ -8,7 +8,8 @@ import (
 )
 
 type Client interface {
-	Serialize(string) error
+	Write(p []byte) (n int, err error)
+	Flush() error
 	Close() error
 }
 

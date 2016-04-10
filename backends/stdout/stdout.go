@@ -1,6 +1,6 @@
 package stdout
 
-import "fmt"
+import "os"
 
 type stdout struct{}
 
@@ -8,8 +8,11 @@ func New() (*stdout, error) {
 	return &stdout{}, nil
 }
 
-func (s *stdout) Serialize(msg string) error {
-	fmt.Printf("message: %s\n", msg)
+func (s *stdout) Write(p []byte) (n int, err error) {
+	return os.Stdout.Write(p)
+}
+
+func (s *stdout) Flush() error {
 	return nil
 }
 

@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"log"
 	"math/rand"
 	"os"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/jacoelho/flux/backends"
@@ -16,18 +14,28 @@ import (
 )
 
 var (
-	tmpPayload   bytes.Buffer
 	backendNodes = flag.String("nodes", "", "backend nodes as a comma separated list")
-	backendType  = flag.String("type", "kafka", "backend type: kafka|stdout")
+	backendType  = flag.String("type", "stdout", "backend type: kafka|stdout")
 	fileTemplate = flag.String("template", "", "template file")
-
-	config = &fake.Config{
-		Rand: rand.New(rand.NewSource((time.Now().Unix()))),
-	}
+	duration     = flag.Int("duration", 10, "number of seconds running")
 )
 
 func main() {
 	flag.Parse()
+
+	cfg := &backends.Config{
+		Type:  *backendType,
+		Nodes: strings.Split(*backendNodes, ","),
+	}
+
+	config := &fake.Config{
+		Rand: rand.New(rand.NewSource((time.Now().Unix()))),
+	}
+
+	client, err := backends.NewClient(cfg)
+	if err != nil {
+		log.Fatalf("execution: %s", err)
+	}
 
 	file, err := os.Open(*fileTemplate)
 	if err != nil {
@@ -40,27 +48,13 @@ func main() {
 		log.Fatalf("open %s", err)
 	}
 
-	tmpl, err := template.New("").Funcs(fake.FuncMap(config)).Parse(string(p.Content()))
-	if err != nil {
-		log.Fatalf("template %s", err)
-	}
+	timeout := make(chan struct{}, 1)
+	go func() {
+		time.Sleep(time.Second * time.Duration(*duration))
+		timeout <- struct{}{}
+	}()
 
-	cfg := &backends.Config{
-		Type:  *backendType,
-		Nodes: strings.Split(*backendNodes, ","),
-	}
+	p.Generate(client, FuncMap(config))
 
-	client, err := backends.NewClient(cfg)
-	if err != nil {
-		log.Fatalf("execution: %s", err)
-	}
-
-	for {
-		tmpl.Execute(&tmpPayload, nil)
-		client.Serialize(tmpPayload.String())
-		tmpPayload.Reset()
-	}
-
-	for {
-	}
+	<-timeout
 }
