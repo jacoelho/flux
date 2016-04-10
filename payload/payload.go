@@ -3,12 +3,13 @@ package payload
 import (
 	"bufio"
 	"bytes"
-	"html/template"
 	"io"
+	"text/template"
 )
 
 type payload struct {
 	content string
+	tmpl    *template.Template
 }
 
 type Payload interface {
@@ -19,15 +20,36 @@ func (p *payload) Content() string {
 	return p.content
 }
 
-func (p *payload) Generate(w io.Writer, t template.FuncMap) error {
-	tmpl, err := template.New("").Funcs(t).Parse(p.content)
+func (p *payload) parse(t map[string]interface{}) error {
+	parse, err := template.New("").Funcs(t).Parse(p.content)
 	if err != nil {
 		return err
 	}
 
+	p.tmpl = parse
+	return nil
+}
+
+func (p *payload) Generate(w io.Writer, t map[string]interface{}) error {
+	if p.tmpl == nil {
+		if err := p.parse(t); err != nil {
+			return err
+		}
+	}
+
+	if err := p.tmpl.Execute(w, nil); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *payload) GenerateAndLoop(w io.Writer, t map[string]interface{}) error {
 	go func() {
 		for {
-			tmpl.Execute(w, nil)
+			if err := p.Generate(w, t); err != nil {
+				return
+			}
 		}
 	}()
 

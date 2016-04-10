@@ -54,7 +54,7 @@ func main() {
 		timeout <- struct{}{}
 	}()
 
-	p.Generate(client, FuncMap(config))
+	p.GenerateAndLoop(client, FuncMap(config))
 
 	<-timeout
 }
