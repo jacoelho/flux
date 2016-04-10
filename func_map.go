@@ -1,4 +1,4 @@
-package main
+package flux
 
 import (
 	"github.com/jacoelho/flux/fake"
