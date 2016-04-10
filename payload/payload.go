@@ -8,8 +8,7 @@ import (
 )
 
 type payload struct {
-	content         string
-	transformations map[string]interface{}
+	content string
 }
 
 type Payload interface {
@@ -20,7 +19,7 @@ func (p *payload) Content() string {
 	return p.content
 }
 
-func (p *payload) Generate(w io.Writer, t map[string]interface{}) error {
+func (p *payload) Generate(w io.Writer, t template.FuncMap) error {
 	tmpl, err := template.New("").Funcs(t).Parse(p.content)
 	if err != nil {
 		return err
