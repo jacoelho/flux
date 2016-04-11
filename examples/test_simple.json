@@ -1,0 +1,13 @@
+{
+    "data": [
+        {{- range $i, $_ := sequence 2 }}
+        {{- if $i}},{{end}}
+        {
+            "id": "{{ rand 10 1000000 }}",
+            "name": "{{ firstName }} {{ lastName }}",
+            "gender": "{{ choice "male" "female" }}",
+            "type": "{{ choice 1 2 3 }}"
+        }
+        {{- end}}
+    ]
+}

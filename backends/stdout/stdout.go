@@ -1,15 +1,27 @@
 package stdout
 
-import "fmt"
+import (
+	"io"
+	"os"
+)
 
-type stdout struct{}
-
-func New() (*stdout, error) {
-	return &stdout{}, nil
+type stdout struct {
+	writer io.Writer
 }
 
-func (s *stdout) Serialize(msg string) error {
-	fmt.Printf("message: %s\n", msg)
+func New() (*stdout, error) {
+	return &stdout{writer: os.Stdout}, nil
+}
+
+func (s *stdout) setWriter(w io.Writer) {
+	s.writer = w
+}
+
+func (s *stdout) Write(p []byte) (n int, err error) {
+	return s.writer.Write(p)
+}
+
+func (s *stdout) Flush() error {
 	return nil
 }
 

@@ -8,7 +8,8 @@ import (
 )
 
 type Client interface {
-	Serialize(string) error
+	Write(p []byte) (n int, err error)
+	Flush() error
 	Close() error
 }
 
@@ -17,7 +18,7 @@ var ErrInvalidBackend = errors.New("invalid backend")
 func NewClient(c *Config) (Client, error) {
 	switch c.Type {
 	case "kafka":
-		return kafka.New(c.Nodes)
+		return kafka.New(c.Nodes, c.Topic)
 	case "stdout":
 		return stdout.New()
 	}

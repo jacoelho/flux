@@ -1,12 +1,18 @@
 package kafka
 
-import "github.com/Shopify/sarama"
+import (
+	"bytes"
+
+	"github.com/Shopify/sarama"
+)
 
 type kafka struct {
 	Client sarama.AsyncProducer
+	buffer *bytes.Buffer
+	topic  string
 }
 
-func New(brokers []string) (*kafka, error) {
+func New(brokers []string, topic string) (*kafka, error) {
 	config := sarama.NewConfig()
 
 	config.Producer.Retry.Max = 5
@@ -18,17 +24,25 @@ func New(brokers []string) (*kafka, error) {
 		return nil, err
 	}
 
-	return &kafka{Client: producer}, nil
+	return &kafka{
+		Client: producer,
+		buffer: new(bytes.Buffer),
+		topic:  topic,
+	}, nil
 }
 
-func (k *kafka) Serialize(msg string) error {
-	msgEncoder := sarama.StringEncoder(msg)
+func (k *kafka) Write(p []byte) (n int, err error) {
+	return k.buffer.Write(p)
+}
 
+func (k *kafka) Flush() error {
 	k.Client.Input() <- &sarama.ProducerMessage{
 		Topic: "test",
-		Key:   sarama.StringEncoder("test"),
-		Value: msgEncoder,
+		Key:   sarama.StringEncoder(k.topic),
+		Value: sarama.StringEncoder(k.buffer.String()),
 	}
+
+	k.buffer.Reset()
 	return nil
 }
 
