@@ -9,9 +9,10 @@ import (
 type kafka struct {
 	Client sarama.AsyncProducer
 	buffer *bytes.Buffer
+	topic  string
 }
 
-func New(brokers []string) (*kafka, error) {
+func New(brokers []string, topic string) (*kafka, error) {
 	config := sarama.NewConfig()
 
 	config.Producer.Retry.Max = 5
@@ -26,6 +27,7 @@ func New(brokers []string) (*kafka, error) {
 	return &kafka{
 		Client: producer,
 		buffer: new(bytes.Buffer),
+		topic:  topic,
 	}, nil
 }
 
@@ -36,7 +38,7 @@ func (k *kafka) Write(p []byte) (n int, err error) {
 func (k *kafka) Flush() error {
 	k.Client.Input() <- &sarama.ProducerMessage{
 		Topic: "test",
-		Key:   sarama.StringEncoder("test"),
+		Key:   sarama.StringEncoder(k.topic),
 		Value: sarama.StringEncoder(k.buffer.String()),
 	}
 

@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jacoelho/flux"
 	"github.com/jacoelho/flux/backends"
 	"github.com/jacoelho/flux/fake"
 	"github.com/jacoelho/flux/payload"
@@ -25,6 +24,7 @@ func execute(a *ActionConfig) {
 	cfg := &backends.Config{
 		Type:  a.Type,
 		Nodes: strings.Split(a.ConnectionString, ","),
+		Topic: a.Topic,
 	}
 
 	config := &fake.Config{
@@ -53,7 +53,7 @@ func execute(a *ActionConfig) {
 		timeout <- struct{}{}
 	}()
 
-	p.GenerateAndLoop(client, flux.FuncMap(config))
+	p.GenerateAndLoop(client, FuncMap(config))
 
 	<-timeout
 
